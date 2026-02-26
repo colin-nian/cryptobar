@@ -19,6 +19,7 @@ static NSWindow *_settingsWindow = nil;
 @property(nonatomic, strong) NSPopUpButton *languagePopup;
 @property(nonatomic, strong) NSButton *showChangeSwitch;
 @property(nonatomic, strong) NSButton *compactNameSwitch;
+@property(nonatomic, strong) NSButton *startAtLoginSwitch;
 
 // Tab 2
 @property(nonatomic, strong) NSTextField *bnWSField;
@@ -159,6 +160,17 @@ static NSArray *_langNames = nil;
     self.compactNameSwitch.frame = NSMakeRect(controlX, y, 30, 22);
     self.compactNameSwitch.state = [self.currentSettings[@"compact_name"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff;
     [view addSubview:self.compactNameSwitch];
+
+    // Start at Login
+    y -= 38;
+    NSTextField *startupLabel = [NSTextField labelWithString:[self S:@"start_at_login"]];
+    startupLabel.frame = NSMakeRect(20, y, labelW, 22);
+    [view addSubview:startupLabel];
+
+    self.startAtLoginSwitch = [NSButton checkboxWithTitle:@"" target:self action:@selector(settingChanged:)];
+    self.startAtLoginSwitch.frame = NSMakeRect(controlX, y, 30, 22);
+    self.startAtLoginSwitch.state = [self.currentSettings[@"start_at_login"] boolValue] ? NSControlStateValueOn : NSControlStateValueOff;
+    [view addSubview:self.startAtLoginSwitch];
 
     return view;
 }
@@ -519,8 +531,10 @@ static NSArray *_langNames = nil;
 
     BOOL showChange = (self.showChangeSwitch.state == NSControlStateValueOn);
     BOOL compactName = (self.compactNameSwitch.state == NSControlStateValueOn);
+    BOOL startAtLogin = (self.startAtLoginSwitch.state == NSControlStateValueOn);
     result[@"show_change"] = [NSNumber numberWithBool:showChange];
     result[@"compact_name"] = [NSNumber numberWithBool:compactName];
+    result[@"start_at_login"] = [NSNumber numberWithBool:startAtLogin];
 
     NSInteger srcIdx = [self.sourceRadio selectedColumn];
     NSArray *sources = @[@"binance", @"htx", @"gateio"];

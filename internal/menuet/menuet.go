@@ -106,6 +106,20 @@ func (a *Application) HideStartup() {
 	a.hideStartupItem = true
 }
 
+// RunningAtStartup returns whether the app is configured to launch at login
+func (a *Application) RunningAtStartup() bool {
+	return a.runningAtStartup()
+}
+
+// ToggleStartup toggles the launch-at-login state
+func (a *Application) ToggleStartup() {
+	if a.runningAtStartup() {
+		a.removeStartupItem()
+	} else {
+		a.addStartupItem()
+	}
+}
+
 // TitleSegment represents a piece of the status bar title - either text or an image
 type TitleSegment struct {
 	Text      string `json:"text,omitempty"`

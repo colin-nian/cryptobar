@@ -17,19 +17,21 @@ var mbInstance *MenuBar
 func SetGlobalMenuBar(mb *MenuBar) {
 	mbInstance = mb
 	menuet.SettingsCallback = onSettingsChanged
+	menuet.CoinSelectionCallback = onCoinSelectionChanged
 }
 
 type settingsJSON struct {
-	ShowChange  bool    `json:"show_change"`
-	CompactName bool    `json:"compact_name"`
-	FontSize    float64 `json:"font_size"`
-	IconMode    string  `json:"icon_mode"`
-	LogoColor   string  `json:"logo_color"`
-	Language    string  `json:"language"`
-	DataSource  string  `json:"data_source"`
-	LogPath     string  `json:"log_path"`
-	AssetsPath  string  `json:"assets_path"`
-	USDTAddress string  `json:"usdt_address"`
+	ShowChange   bool    `json:"show_change"`
+	CompactName  bool    `json:"compact_name"`
+	FontSize     float64 `json:"font_size"`
+	IconMode     string  `json:"icon_mode"`
+	LogoColor    string  `json:"logo_color"`
+	Language     string  `json:"language"`
+	DataSource   string  `json:"data_source"`
+	LogPath      string  `json:"log_path"`
+	AssetsPath   string  `json:"assets_path"`
+	USDTAddress  string  `json:"usdt_address"`
+	StartAtLogin bool    `json:"start_at_login"`
 
 	SourceURLs  map[string]config.SourceURLConfig `json:"source_urls,omitempty"`
 	DefaultURLs map[string]config.SourceURLConfig `json:"default_urls,omitempty"`
@@ -46,19 +48,20 @@ func (mb *MenuBar) OpenSettings() {
 	i18n.Set(s.Language)
 
 	data := settingsJSON{
-		ShowChange:  s.ShowChange,
-		CompactName: s.CompactName,
-		FontSize:    s.FontSize,
-		IconMode:    s.IconMode,
-		LogoColor:   s.LogoColor,
-		Language:    s.Language,
-		DataSource:  s.DataSource,
-		LogPath:     config.LogFilePath(),
-		AssetsPath:  filepath.Join(config.ConfigDir(), "assets"),
-		USDTAddress: "TV75kwC1n7yA33kMi9yYw7EVgybPua4fvQ",
-		SourceURLs:  s.SourceURLs,
-		DefaultURLs: datasource.AllDefaultURLs(),
-		Strings:     i18n.ObjCStrings(),
+		ShowChange:   s.ShowChange,
+		CompactName:  s.CompactName,
+		FontSize:     s.FontSize,
+		IconMode:     s.IconMode,
+		LogoColor:    s.LogoColor,
+		Language:     s.Language,
+		DataSource:   s.DataSource,
+		LogPath:      config.LogFilePath(),
+		AssetsPath:   filepath.Join(config.ConfigDir(), "assets"),
+		USDTAddress:  "TV75kwC1n7yA33kMi9yYw7EVgybPua4fvQ",
+		StartAtLogin: menuet.App().RunningAtStartup(),
+		SourceURLs:   s.SourceURLs,
+		DefaultURLs:  datasource.AllDefaultURLs(),
+		Strings:      i18n.ObjCStrings(),
 	}
 
 	b, err := json.Marshal(data)
@@ -110,6 +113,13 @@ func onSettingsChanged(jsonStr string) {
 	}
 	if v, ok := raw["source_urls"]; ok {
 		json.Unmarshal(v, &s.SourceURLs)
+	}
+
+	s.StartAtLogin = parseBool(raw["start_at_login"])
+	currentStartup := menuet.App().RunningAtStartup()
+	if s.StartAtLogin != currentStartup {
+		menuet.App().ToggleStartup()
+		log.Printf("[Settings] start at login: %v", s.StartAtLogin)
 	}
 
 	if s.Language != "" {

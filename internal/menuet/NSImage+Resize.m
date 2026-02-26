@@ -83,10 +83,15 @@ static ImageCache *instance;
 	} else {
 		image = [NSImage imageNamed:name];
 	}
+	if (!image) {
+		return nil;
+	}
 	if (height > 0 && image.size.height > height) {
 		image = [image imageWithHeight:height];
 	}
-	[[ImageCache instance] setImage:image forName:name withHeight:height];
+	if (image) {
+		[[ImageCache instance] setImage:image forName:name withHeight:height];
+	}
 	return image;
 }
 

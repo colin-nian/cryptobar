@@ -10,6 +10,7 @@ import (
 	"cryptobar/internal/datasource"
 	_ "cryptobar/internal/datasource"
 	"cryptobar/internal/i18n"
+	"cryptobar/internal/icons"
 	"cryptobar/internal/menubar"
 	"cryptobar/internal/price"
 )
@@ -24,6 +25,7 @@ func main() {
 
 	setupLogging()
 	log.Println("[Main] CryptoBar starting...")
+	icons.Init(config.ConfigDir())
 	log.Printf("[Main] loaded %d coins, data source: %s", len(cfg.Coins), cfg.Settings.DataSource)
 
 	store := price.NewStore()

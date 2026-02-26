@@ -1,9 +1,9 @@
 package menubar
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -11,50 +11,14 @@ import (
 	"cryptobar/internal/config"
 	"cryptobar/internal/datasource"
 	"cryptobar/internal/i18n"
+	"cryptobar/internal/icons"
 	"cryptobar/internal/price"
 
 	"github.com/caseymrm/menuet"
 )
 
-const coinIconURL = "https://assets.coingecko.com/coins/images/%d/small/%s"
-
-var coinIconMap = map[string]string{
-	"BTC":    "https://assets.coingecko.com/coins/images/1/small/bitcoin.png",
-	"ETH":    "https://assets.coingecko.com/coins/images/279/small/ethereum.png",
-	"BNB":    "https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png",
-	"SOL":    "https://assets.coingecko.com/coins/images/4128/small/solana.png",
-	"XRP":    "https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png",
-	"ADA":    "https://assets.coingecko.com/coins/images/975/small/cardano.png",
-	"DOGE":   "https://assets.coingecko.com/coins/images/5/small/dogecoin.png",
-	"DOT":    "https://assets.coingecko.com/coins/images/12171/small/polkadot.png",
-	"AVAX":   "https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png",
-	"LINK":   "https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png",
-	"MATIC":  "https://assets.coingecko.com/coins/images/4713/small/polygon.png",
-	"UNI":    "https://assets.coingecko.com/coins/images/12504/small/uniswap-logo.png",
-	"ATOM":   "https://assets.coingecko.com/coins/images/1481/small/cosmos_hub.png",
-	"LTC":    "https://assets.coingecko.com/coins/images/2/small/litecoin.png",
-	"ETC":    "https://assets.coingecko.com/coins/images/453/small/ethereum-classic-logo.png",
-	"NEAR":   "https://assets.coingecko.com/coins/images/10365/small/near.jpg",
-	"APT":    "https://assets.coingecko.com/coins/images/26455/small/aptos_round.png",
-	"ARB":    "https://assets.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg",
-	"OP":     "https://assets.coingecko.com/coins/images/25244/small/Optimism.png",
-	"SUI":    "https://assets.coingecko.com/coins/images/28375/small/sui.png",
-	"TRX":    "https://assets.coingecko.com/coins/images/1094/small/tron-logo.png",
-	"SHIB":   "https://assets.coingecko.com/coins/images/11939/small/shiba.png",
-	"PEPE":   "https://assets.coingecko.com/coins/images/29850/small/pepe-token.jpeg",
-	"FIL":    "https://assets.coingecko.com/coins/images/12817/small/filecoin.png",
-	"HBAR":   "https://assets.coingecko.com/coins/images/3688/small/hbar.png",
-	"ICP":    "https://assets.coingecko.com/coins/images/14495/small/Internet_Computer_logo.png",
-	"WIF":    "https://assets.coingecko.com/coins/images/33566/small/dogwifhat.jpg",
-	"RENDER": "https://assets.coingecko.com/coins/images/11636/small/rndr.png",
-	"FET":    "https://assets.coingecko.com/coins/images/5681/small/Fetch.jpg",
-}
-
 func coinIcon(symbol string) string {
-	if url, ok := coinIconMap[strings.ToUpper(symbol)]; ok {
-		return url
-	}
-	return ""
+	return icons.URL(symbol)
 }
 
 type MenuBar struct {
@@ -88,6 +52,7 @@ func (mb *MenuBar) Run() {
 	go mb.updateLoop()
 
 	menuet.App().Label = "com.cryptobar.app"
+	menuet.App().HideStartup()
 	menuet.App().Children = mb.menuItems
 	mb.updateTitle()
 	menuet.App().RunApplication()
@@ -229,11 +194,12 @@ func (mb *MenuBar) menuItems() []menuet.MenuItem {
 
 	items = append(items, menuet.MenuItem{Type: menuet.Separator})
 
-	ds := mb.GetDataSource()
 	items = append(items, menuet.MenuItem{
 		Text:     i18n.T("select_coins"),
 		FontSize: fontSize,
-		Children: func() []menuet.MenuItem { return mb.coinSelectMenu(ds) },
+		Clicked: func() {
+			mb.OpenCoinSelector()
+		},
 	})
 
 	items = append(items, menuet.MenuItem{Type: menuet.Separator})
@@ -258,16 +224,6 @@ func (mb *MenuBar) menuItems() []menuet.MenuItem {
 					log.Printf("[Menu] refresh coin list error: %v", err)
 				}
 			}()
-		},
-	})
-
-	items = append(items, menuet.MenuItem{Type: menuet.Separator})
-
-	items = append(items, menuet.MenuItem{
-		Text:     i18n.T("quit"),
-		FontSize: fontSize,
-		Clicked: func() {
-			os.Exit(0)
 		},
 	})
 
@@ -420,6 +376,107 @@ func (mb *MenuBar) switchDataSource(name string) {
 			})
 		}
 	}()
+}
+
+type coinSelectorJSON struct {
+	Coins         []coinEntry       `json:"coins"`
+	SelectedPairs []string          `json:"selected_pairs"`
+	Strings       map[string]string `json:"strings,omitempty"`
+}
+
+type coinEntry struct {
+	Symbol string `json:"symbol"`
+	Name   string `json:"name"`
+	Pair   string `json:"pair"`
+}
+
+func (mb *MenuBar) OpenCoinSelector() {
+	ds := mb.GetDataSource()
+	allCoins := ds.GetAllCoins()
+	cfg := config.Get()
+
+	var entries []coinEntry
+	for _, c := range allCoins {
+		entries = append(entries, coinEntry{
+			Symbol: c.Symbol,
+			Name:   c.Name,
+			Pair:   c.Pair,
+		})
+	}
+
+	var selectedPairs []string
+	if cfg != nil {
+		for _, c := range cfg.Coins {
+			selectedPairs = append(selectedPairs, c.Pair)
+		}
+	}
+
+	data := coinSelectorJSON{
+		Coins:         entries,
+		SelectedPairs: selectedPairs,
+		Strings:       i18n.ObjCStrings(),
+	}
+
+	b, err := json.Marshal(data)
+	if err != nil {
+		log.Printf("[CoinSelector] marshal error: %v", err)
+		return
+	}
+
+	menuet.ShowCoinSelector(string(b))
+}
+
+type coinSelectionResult struct {
+	Selected []coinEntry `json:"selected"`
+}
+
+func onCoinSelectionChanged(jsonStr string) {
+	var result coinSelectionResult
+	if err := json.Unmarshal([]byte(jsonStr), &result); err != nil {
+		log.Printf("[CoinSelector] unmarshal error: %v", err)
+		return
+	}
+
+	cfg := config.Get()
+	if cfg == nil {
+		return
+	}
+
+	selectedPairs := make(map[string]bool)
+	for _, c := range result.Selected {
+		selectedPairs[c.Pair] = true
+	}
+
+	existingCoins := make(map[string]config.CoinConfig)
+	for _, c := range cfg.Coins {
+		existingCoins[c.Pair] = c
+	}
+
+	var newCoins []config.CoinConfig
+	for _, c := range result.Selected {
+		if existing, ok := existingCoins[c.Pair]; ok {
+			newCoins = append(newCoins, existing)
+		} else {
+			newCoins = append(newCoins, config.CoinConfig{
+				Symbol:    c.Symbol,
+				Pair:      c.Pair,
+				Name:      c.Name,
+				Precision: autoPrec(c.Symbol),
+				ShowInBar: false,
+			})
+		}
+	}
+
+	if err := config.UpdateCoins(newCoins); err != nil {
+		log.Printf("[CoinSelector] save error: %v", err)
+	}
+
+	if mbInstance != nil {
+		mbInstance.SyncPairs()
+		mbInstance.updateTitle()
+	}
+
+	log.Printf("[CoinSelector] updated: %d coins selected", len(newCoins))
 }
 
 func (mb *MenuBar) coinSelectMenu(ds datasource.DataSource) []menuet.MenuItem {
