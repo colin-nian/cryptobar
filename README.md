@@ -39,6 +39,10 @@ CryptoBar is a lightweight macOS menu bar application that displays real-time cr
 - **Lightweight** — No Dock icon, runs entirely in the menu bar
 - **Customizable** — Font size, display mode (logo/text/both), compact names
 
+<p align="center">
+  <img src="assets/screenshot_settings.png" width="420" alt="Settings Window">
+</p>
+
 ## Quick Start
 
 > **Download the latest release and start using it in seconds.**

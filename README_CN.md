@@ -23,6 +23,10 @@
 
 CryptoBar 是一个轻量级的 macOS 菜单栏应用，可在菜单栏实时显示加密货币价格。支持多个交易所数据源、币种 Logo 图标显示以及原生设置窗口，静默运行在你的菜单栏中。
 
+<p align="center">
+  <img src="assets/screenshot_bar.png" width="500" alt="菜单栏截图">
+</p>
+
 ## 功能特性
 
 - **实时价格** — 通过 WebSocket 推送实时加密货币价格
@@ -34,6 +38,10 @@ CryptoBar 是一个轻量级的 macOS 菜单栏应用，可在菜单栏实时显
 - **国际化** — 支持 English、简体中文、繁體中文、日本語、한국어
 - **轻量运行** — 无 Dock 图标，完全在菜单栏运行
 - **自定义** — 字体大小、显示模式（Logo/文字/混合）、紧凑名称
+
+<p align="center">
+  <img src="assets/screenshot_settings.png" width="420" alt="设置窗口">
+</p>
 
 ## 快速开始
 
