@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoBar — Real-time Crypto Prices in Your macOS Menu Bar</title>
+<meta name="description" content="A lightweight macOS menu bar app for real-time cryptocurrency prices. Supports Binance, HTX, Gate.io with WebSocket streaming.">
+<link rel="icon" href="https://raw.githubusercontent.com/colin-nian/cryptobar/main/assets/logo_128.png" type="image/png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f0f1a;--surface:#1a1a2e;--card:#22223a;--text:#e8e8f0;--muted:#9898b0;--accent:#f0b90b;--accent2:#26a17b;--gradient:linear-gradient(135deg,#f7931a,#f0b90b,#26a17b)}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.hero{text-align:center;padding:80px 20px 60px;background:radial-gradient(ellipse at 50% 0%,#1a1a3e 0%,var(--bg) 70%)}
+.hero img.logo{width:100px;height:100px;margin-bottom:24px;border-radius:20px}
+.hero h1{font-size:3rem;font-weight:700;margin-bottom:12px;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p.tagline{font-size:1.25rem;color:var(--muted);max-width:600px;margin:0 auto 32px}
+.hero .buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:10px;font-size:1rem;font-weight:600;transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px);text-decoration:none}
+.btn-primary{background:var(--gradient);color:#111}
+.btn-primary:hover{box-shadow:0 8px 30px rgba(240,185,11,.3)}
+.btn-secondary{background:var(--card);color:var(--text);border:1px solid #333}
+.btn-secondary:hover{box-shadow:0 8px 30px rgba(255,255,255,.05)}
+
+.screenshot{text-align:center;padding:20px 20px 60px}
+.screenshot img{max-width:600px;width:90%;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+
+.features{padding:60px 20px;max-width:1000px;margin:0 auto}
+.features h2{text-align:center;font-size:2rem;margin-bottom:48px}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.feature-card{background:var(--card);border-radius:14px;padding:28px;border:1px solid #2a2a40;transition:transform .2s}
+.feature-card:hover{transform:translateY(-4px)}
+.feature-card h3{font-size:1.1rem;margin-bottom:8px;color:var(--accent)}
+.feature-card p{color:var(--muted);font-size:.95rem}
+
+.install{padding:60px 20px;max-width:800px;margin:0 auto}
+.install h2{text-align:center;font-size:2rem;margin-bottom:36px}
+.install-methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px}
+.install-card{background:var(--card);border-radius:14px;padding:28px;border:1px solid #2a2a40}
+.install-card h3{margin-bottom:12px;color:var(--accent2)}
+.install-card code{display:block;background:var(--bg);padding:14px;border-radius:8px;font-size:.9rem;margin-top:8px;color:#ddd;overflow-x:auto}
+
+.exchanges{padding:60px 20px;max-width:800px;margin:0 auto;text-align:center}
+.exchanges h2{font-size:2rem;margin-bottom:12px}
+.exchanges p{color:var(--muted);margin-bottom:32px}
+.exchange-logos{display:flex;justify-content:center;gap:40px;flex-wrap:wrap}
+.exchange-item{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);font-size:.9rem}
+.exchange-item .badge{background:var(--card);padding:16px 28px;border-radius:12px;font-size:1.1rem;font-weight:600;color:var(--text);border:1px solid #2a2a40}
+
+.lang-switch{text-align:center;padding:20px;color:var(--muted);font-size:.9rem}
+
+footer{text-align:center;padding:40px 20px;border-top:1px solid #222;color:var(--muted);font-size:.85rem}
+footer .donate{margin-top:16px;background:var(--card);display:inline-block;padding:12px 24px;border-radius:10px;border:1px solid #2a2a40}
+footer .donate code{color:var(--accent);font-size:.8rem}
+
+@media(max-width:600px){
+  .hero h1{font-size:2rem}
+  .hero p.tagline{font-size:1rem}
+  .btn{padding:12px 20px;font-size:.9rem}
+  .features h2,.install h2,.exchanges h2{font-size:1.5rem}
+}
+
+.fade-in{opacity:0;transform:translateY(20px);transition:opacity .6s,transform .6s}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="lang-switch">
+  English | <a href="#" onclick="switchLang()">简体中文</a>
+</div>
+
+<section class="hero">
+  <img class="logo" src="https://raw.githubusercontent.com/colin-nian/cryptobar/main/assets/logo.png" alt="CryptoBar">
+  <h1>CryptoBar</h1>
+  <p class="tagline" id="tagline">Real-time cryptocurrency prices in your macOS menu bar. Lightweight, fast, and beautiful.</p>
+  <div class="buttons">
+    <a class="btn btn-primary" href="https://github.com/colin-nian/cryptobar/releases/latest">Download</a>
+    <a class="btn btn-secondary" href="https://github.com/colin-nian/cryptobar">GitHub</a>
+  </div>
+</section>
+
+<section class="screenshot fade-in">
+  <img src="https://raw.githubusercontent.com/colin-nian/cryptobar/main/assets/screenshot_bar.png" alt="CryptoBar Menu Bar">
+</section>
+
+<section class="features fade-in">
+  <h2 id="feat-title">Features</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <h3>Real-time Prices</h3>
+      <p>Live cryptocurrency prices via WebSocket streaming. Updates instantly without polling.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Multiple Exchanges</h3>
+      <p>Supports Binance, HTX (Huobi), and Gate.io. Switch between them with one click.</p>
+    </div>
+    <div class="feature-card">
+      <h3>1900+ Coins</h3>
+      <p>Search and select from over 1900 cryptocurrencies with a native search window.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Coin Logos</h3>
+      <p>Display beautiful coin icons in your menu bar. Supports color and grayscale modes.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Price Alerts</h3>
+      <p>Set price alerts and get native macOS notifications when targets are hit.</p>
+    </div>
+    <div class="feature-card">
+      <h3>5 Languages</h3>
+      <p>English, 简体中文, 繁體中文, 日本語, 한국어. Full internationalization support.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Native macOS</h3>
+      <p>Built with Go + Objective-C/Cocoa. Native settings window, no Electron bloat.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Lightweight</h3>
+      <p>No Dock icon. Runs quietly in your menu bar. Under 6MB download size.</p>
+    </div>
+  </div>
+</section>
+
+<section class="screenshot fade-in">
+  <img src="https://raw.githubusercontent.com/colin-nian/cryptobar/main/assets/screenshot_settings.png" alt="CryptoBar Settings" style="max-width:420px">
+</section>
+
+<section class="install fade-in">
+  <h2 id="install-title">Installation</h2>
+  <div class="install-methods">
+    <div class="install-card">
+      <h3>Homebrew</h3>
+      <code>brew tap colin-nian/tap<br>brew install cryptobar</code>
+    </div>
+    <div class="install-card">
+      <h3>Manual Download</h3>
+      <p style="color:var(--muted);font-size:.95rem">Download the latest <code style="display:inline;padding:2px 6px;margin:0">.zip</code> from
+        <a href="https://github.com/colin-nian/cryptobar/releases/latest">GitHub Releases</a>,
+        unzip and drag to Applications.</p>
+    </div>
+  </div>
+</section>
+
+<section class="exchanges fade-in">
+  <h2>Supported Exchanges</h2>
+  <p>Real-time data via WebSocket from major exchanges</p>
+  <div class="exchange-logos">
+    <div class="exchange-item"><div class="badge">Binance</div></div>
+    <div class="exchange-item"><div class="badge">HTX (Huobi)</div></div>
+    <div class="exchange-item"><div class="badge">Gate.io</div></div>
+  </div>
+</section>
+
+<footer>
+  <p>CryptoBar is open source under the MIT License.</p>
+  <p style="margin-top:8px"><a href="https://github.com/colin-nian/cryptobar">GitHub</a> &middot; <a href="https://github.com/colin-nian/cryptobar/releases">Releases</a></p>
+  <div class="donate">
+    <p style="margin-bottom:6px">Support development &mdash; USDT (TRC20)</p>
+    <code>TV75kwC1n7yA33kMi9yYw7EVgybPua4fvQ</code>
+  </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')})
+  },{threshold:.15});
+  document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
+});
+</script>
+</body>
+</html>
