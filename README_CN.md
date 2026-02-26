@@ -16,6 +16,7 @@
   <img src="https://img.shields.io/badge/平台-macOS-blue?style=flat-square&logo=apple" alt="Platform">
   <img src="https://img.shields.io/badge/语言-Go-00ADD8?style=flat-square&logo=go" alt="Language">
   <img src="https://img.shields.io/badge/协议-MIT-green?style=flat-square" alt="License">
+  <a href="https://github.com/colin-nian/cryptobar/releases/latest"><img src="https://img.shields.io/github/v/release/colin-nian/cryptobar?style=flat-square&color=orange" alt="Release"></a>
 </p>
 
 ---
@@ -34,9 +35,17 @@ CryptoBar 是一个轻量级的 macOS 菜单栏应用，可在菜单栏实时显
 - **轻量运行** — 无 Dock 图标，完全在菜单栏运行
 - **自定义** — 字体大小、显示模式（Logo/文字/混合）、紧凑名称
 
-## 安装
+## 快速开始
 
-### 从源码构建
+> **下载即用，无需编译。**
+
+1. **[下载 CryptoBar.app](https://github.com/colin-nian/cryptobar/releases/latest)** — 从 Release 页面下载最新版 `.zip`
+2. 解压后将 `CryptoBar.app` 拖入 `/Applications`（应用程序）文件夹
+3. 启动应用 — CryptoBar 会出现在菜单栏中
+
+> **首次启动提示：** macOS 可能会对未签名应用弹出安全警告，请前往 **系统设置 → 隐私与安全性**，点击 **仍要打开** 即可。
+
+## 从源码构建
 
 **环境要求：** Go 1.23+、macOS 12+、Xcode 命令行工具
 
@@ -48,13 +57,11 @@ make app
 
 构建完成后应用位于 `build/CryptoBar.app`。
 
-### 安装到应用程序
+然后安装到应用程序：
 
 ```bash
 make install
 ```
-
-这会将 `CryptoBar.app` 复制到 `/Applications/` 目录。
 
 ## 使用方法
 

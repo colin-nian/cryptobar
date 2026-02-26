@@ -16,6 +16,7 @@
   <img src="https://img.shields.io/badge/platform-macOS-blue?style=flat-square&logo=apple" alt="Platform">
   <img src="https://img.shields.io/badge/language-Go-00ADD8?style=flat-square&logo=go" alt="Language">
   <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License">
+  <a href="https://github.com/colin-nian/cryptobar/releases/latest"><img src="https://img.shields.io/github/v/release/colin-nian/cryptobar?style=flat-square&color=orange" alt="Release"></a>
 </p>
 
 ---
@@ -38,9 +39,17 @@ CryptoBar is a lightweight macOS menu bar application that displays real-time cr
 - **Lightweight** — No Dock icon, runs entirely in the menu bar
 - **Customizable** — Font size, display mode (logo/text/both), compact names
 
-## Installation
+## Quick Start
 
-### Build from Source
+> **Download the latest release and start using it in seconds.**
+
+1. **[Download CryptoBar.app](https://github.com/colin-nian/cryptobar/releases/latest)** — grab the `.zip` from the latest release
+2. Unzip and drag `CryptoBar.app` into your `/Applications` folder
+3. Launch it — CryptoBar will appear in your menu bar
+
+> **First launch:** macOS may show a security warning for unsigned apps. Go to **System Settings → Privacy & Security** and click **Open Anyway**.
+
+## Build from Source
 
 **Requirements:** Go 1.23+, macOS 12+, Xcode Command Line Tools
 
@@ -52,13 +61,11 @@ make app
 
 The built application will be at `build/CryptoBar.app`.
 
-### Install
+Then install to Applications:
 
 ```bash
 make install
 ```
-
-This copies `CryptoBar.app` to `/Applications/`.
 
 ## Usage
 
