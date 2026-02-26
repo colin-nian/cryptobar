@@ -17,8 +17,5 @@ jobs:
         with:
           go-version: "1.23"
 
-      - name: Build
-        run: CGO_ENABLED=1 go build -o build/CryptoBar .
-
       - name: Build app bundle
-        run: make app
+        run: make app GO=go

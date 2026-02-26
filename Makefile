@@ -2,7 +2,7 @@ APP_NAME = CryptoBar
 BUILD_DIR = build
 BINARY = $(BUILD_DIR)/$(APP_NAME)
 APP_BUNDLE = $(BUILD_DIR)/$(APP_NAME).app
-GO = /opt/homebrew/Cellar/go@1.23/1.23.12/bin/go
+GO ?= /opt/homebrew/Cellar/go@1.23/1.23.12/bin/go
 
 .PHONY: build run clean install app
 
