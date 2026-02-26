@@ -134,10 +134,18 @@ Settings are stored in `~/.cryptobar/config.json`. You can configure:
 
 MIT License. See [LICENSE](LICENSE) for details.
 
+## Feedback
+
+If you encounter any issues or have feature requests, please [open an issue](https://github.com/colin-nian/cryptobar/issues) on GitHub.
+
 ## Donate
 
 If you find CryptoBar useful, you can support the development:
 
 **USDT (TRC20):** `TV75kwC1n7yA33kMi9yYw7EVgybPua4fvQ`
+
+<p align="center">
+  <img src="assets/usdt_qrcode.jpg" width="200" alt="USDT QR Code">
+</p>
 
 > Please make sure to use the TRC20 network when sending USDT.

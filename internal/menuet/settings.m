@@ -476,12 +476,28 @@ static NSArray *_langNames = nil;
     copyBtn.font = [NSFont systemFontOfSize:11];
     [view addSubview:copyBtn];
 
-    y -= 40;
-    NSBox *separator = [[NSBox alloc] initWithFrame:NSMakeRect(20, y, 440, 1)];
-    separator.boxType = NSBoxSeparator;
-    [view addSubview:separator];
+    y -= 20;
+    NSImage *qrImage = nil;
+    NSString *bundlePath = [[NSBundle mainBundle] pathForResource:@"usdt_qrcode" ofType:@"jpg"];
+    if (bundlePath) {
+        qrImage = [[NSImage alloc] initWithContentsOfFile:bundlePath];
+    }
+    if (!qrImage) {
+        NSString *qrPath = self.currentSettings[@"assets_path"];
+        if (qrPath) {
+            NSString *qrFile = [qrPath stringByAppendingPathComponent:@"usdt_qrcode.jpg"];
+            qrImage = [[NSImage alloc] initWithContentsOfFile:qrFile];
+        }
+    }
+    if (qrImage) {
+        NSImageView *qrView = [NSImageView imageViewWithImage:qrImage];
+        qrView.frame = NSMakeRect(170, y - 140, 140, 140);
+        qrView.imageScaling = NSImageScaleProportionallyUpOrDown;
+        [view addSubview:qrView];
+        y -= 150;
+    }
 
-    y -= 25;
+    y -= 10;
     NSTextField *note = [NSTextField wrappingLabelWithString:[self S:@"usdt_warning"]];
     note.frame = NSMakeRect(20, y - 20, 440, 40);
     note.font = [NSFont systemFontOfSize:11];

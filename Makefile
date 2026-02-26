@@ -19,6 +19,7 @@ app: build
 	@cp $(BINARY) "$(APP_BUNDLE)/Contents/MacOS/$(APP_NAME)"
 	@cp assets/Info.plist "$(APP_BUNDLE)/Contents/Info.plist"
 	@cp assets/AppIcon.icns "$(APP_BUNDLE)/Contents/Resources/AppIcon.icns"
+	@cp assets/usdt_qrcode.jpg "$(APP_BUNDLE)/Contents/Resources/usdt_qrcode.jpg" 2>/dev/null || true
 	@echo "Built $(APP_BUNDLE)"
 
 install: app

@@ -113,10 +113,18 @@ make install
 
 MIT License。详见 [LICENSE](LICENSE)。
 
+## 反馈
+
+如果你遇到任何问题或有功能需求，请在 GitHub 上 [提交 Issue](https://github.com/colin-nian/cryptobar/issues)。
+
 ## 捐赠
 
 如果你觉得 CryptoBar 好用，欢迎支持开发：
 
 **USDT (TRC20):** `TV75kwC1n7yA33kMi9yYw7EVgybPua4fvQ`
+
+<p align="center">
+  <img src="assets/usdt_qrcode.jpg" width="200" alt="USDT 收款二维码">
+</p>
 
 > 请确保使用 TRC20 网络发送 USDT，使用其他网络可能导致资金永久丢失。

@@ -3,3 +3,6 @@ build/
 *.o
 *.a
 .DS_Store
+.playwright-cli/
+crypto_submit.yml
+reddit_*.png
