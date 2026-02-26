@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f7931a"/>
+      <stop offset="50%" style="stop-color:#f0b90b"/>
+      <stop offset="100%" style="stop-color:#26a17b"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#f7931a"/>
+      <stop offset="100%" style="stop-color:#f0b90b"/>
+    </linearGradient>
+    <linearGradient id="bar2" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#627eea"/>
+      <stop offset="100%" style="stop-color:#8b9fef"/>
+    </linearGradient>
+    <linearGradient id="bar3" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" style="stop-color:#26a17b"/>
+      <stop offset="100%" style="stop-color:#4ecdc4"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="480" height="480" rx="96" ry="96" fill="url(#bg)"/>
+  <line x1="80" y1="380" x2="432" y2="380" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+  <line x1="80" y1="310" x2="432" y2="310" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5"/>
+  <line x1="80" y1="240" x2="432" y2="240" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1.5"/>
+  <line x1="80" y1="170" x2="432" y2="170" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1.5"/>
+  <rect x="100" y="280" width="48" height="100" rx="8" fill="url(#bar)" opacity="0.9"/>
+  <rect x="170" y="220" width="48" height="160" rx="8" fill="url(#bar2)" opacity="0.9"/>
+  <rect x="240" y="190" width="48" height="190" rx="8" fill="url(#bar)" opacity="0.9"/>
+  <rect x="310" y="250" width="48" height="130" rx="8" fill="url(#bar3)" opacity="0.9"/>
+  <rect x="380" y="160" width="48" height="220" rx="8" fill="url(#bar2)" opacity="0.9"/>
+  <polyline points="124,260 194,200 264,170 334,230 404,140"
+            fill="none" stroke="url(#accent)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="124" cy="260" r="7" fill="#f7931a"/>
+  <circle cx="194" cy="200" r="7" fill="#f0b90b"/>
+  <circle cx="264" cy="170" r="7" fill="#f0b90b"/>
+  <circle cx="334" cy="230" r="7" fill="#26a17b"/>
+  <circle cx="404" cy="140" r="7" fill="#26a17b"/>
+  <circle cx="256" cy="95" r="35" fill="#f7931a"/>
+  <text x="256" y="108" text-anchor="middle" font-family="Arial, Helvetica" font-size="44" font-weight="700" fill="white">B</text>
+  <line x1="248" y1="68" x2="248" y2="78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <line x1="264" y1="68" x2="264" y2="78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <line x1="248" y1="112" x2="248" y2="122" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <line x1="264" y1="112" x2="264" y2="122" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <text x="256" y="445" text-anchor="middle" font-family="SF Pro Display, Helvetica Neue, Arial" font-size="52" font-weight="600" fill="white" letter-spacing="4">CRYPTOBAR</text>
+</svg>
