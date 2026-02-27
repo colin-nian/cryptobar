@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"runtime"
 
 	"cryptobar/internal/alert"
 	"cryptobar/internal/config"
@@ -14,6 +15,10 @@ import (
 	"cryptobar/internal/menubar"
 	"cryptobar/internal/price"
 )
+
+func init() {
+	runtime.LockOSThread()
+}
 
 func main() {
 	cfg, err := config.Load()
