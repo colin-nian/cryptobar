@@ -1,4 +1,5 @@
 #import "NSImage+Resize.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface ImageCache : NSObject
 + (ImageCache *)instance;
@@ -24,6 +25,7 @@ static ImageCache *instance;
 	self = [super init];
 	if (self) {
 		self.imageCache = [[NSCache alloc] init];
+		self.imageCache.countLimit = 200;
 	}
 	return self;
 }
@@ -39,9 +41,26 @@ static ImageCache *instance;
 	 forKey:[self keyForName:name withHeight:height]];
 }
 
+- (void)setImage:(NSImage *)image
+        forName:(NSString *)name
+        withHeight:(CGFloat)height
+        grayscale:(BOOL)grayscale {
+	NSString *key = grayscale
+		? [NSString stringWithFormat:@"gray/%f/%@", height, name]
+		: [self keyForName:name withHeight:height];
+	[self.imageCache setObject:image forKey:key];
+}
+
 - (NSImage *)getImageForName:(NSString *)name withHeight:(CGFloat)height {
 	return
 	        [self.imageCache objectForKey:[self keyForName:name withHeight:height]];
+}
+
+- (NSImage *)getImageForName:(NSString *)name withHeight:(CGFloat)height grayscale:(BOOL)grayscale {
+	NSString *key = grayscale
+		? [NSString stringWithFormat:@"gray/%f/%@", height, name]
+		: [self keyForName:name withHeight:height];
+	return [self.imageCache objectForKey:key];
 }
 
 @end
@@ -93,6 +112,41 @@ static ImageCache *instance;
 		[[ImageCache instance] setImage:image forName:name withHeight:height];
 	}
 	return image;
+}
+
++ (NSImage *)imageFromName:(NSString *)name withHeight:(CGFloat)height grayscale:(BOOL)grayscale {
+	if (!grayscale) {
+		return [self imageFromName:name withHeight:height];
+	}
+	if (name.length == 0) {
+		return nil;
+	}
+	NSImage *cached = [[ImageCache instance] getImageForName:name withHeight:height grayscale:YES];
+	if (cached) {
+		return cached;
+	}
+	NSImage *color = [self imageFromName:name withHeight:height];
+	if (!color) {
+		return nil;
+	}
+	NSSize size = color.size;
+	NSImage *gray = [[NSImage alloc] initWithSize:size];
+	[gray lockFocus];
+	CIImage *ci = [[CIImage alloc] initWithData:[color TIFFRepresentation]];
+	CIFilter *filter = [CIFilter filterWithName:@"CIColorMonochrome"];
+	[filter setValue:ci forKey:kCIInputImageKey];
+	[filter setValue:[CIColor colorWithRed:0.7 green:0.7 blue:0.7] forKey:@"inputColor"];
+	[filter setValue:@1.0 forKey:@"inputIntensity"];
+	CIImage *output = filter.outputImage;
+	if (output) {
+		NSCIImageRep *rep = [NSCIImageRep imageRepWithCIImage:output];
+		[rep drawInRect:NSMakeRect(0, 0, size.width, size.height)];
+	}
+	[gray unlockFocus];
+	if (gray) {
+		[[ImageCache instance] setImage:gray forName:name withHeight:height grayscale:YES];
+	}
+	return gray;
 }
 
 @end

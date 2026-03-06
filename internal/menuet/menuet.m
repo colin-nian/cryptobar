@@ -192,24 +192,6 @@ NSStatusItem *_statusItem;
 
 @end
 
-static NSImage *makeGrayscale(NSImage *src) {
-	NSSize size = src.size;
-	NSImage *gray = [[NSImage alloc] initWithSize:size];
-	[gray lockFocus];
-	CIImage *ci = [[CIImage alloc] initWithData:[src TIFFRepresentation]];
-	CIFilter *filter = [CIFilter filterWithName:@"CIColorMonochrome"];
-	[filter setValue:ci forKey:kCIInputImageKey];
-	[filter setValue:[CIColor colorWithRed:0.7 green:0.7 blue:0.7] forKey:@"inputColor"];
-	[filter setValue:@1.0 forKey:@"inputIntensity"];
-	CIImage *output = filter.outputImage;
-	if (output) {
-		NSCIImageRep *rep = [NSCIImageRep imageRepWithCIImage:output];
-		[rep drawInRect:NSMakeRect(0, 0, size.width, size.height)];
-	}
-	[gray unlockFocus];
-	return gray;
-}
-
 void setState(const char *jsonString) {
 	NSDictionary *state = [NSJSONSerialization
 	                       JSONObjectWithData:[[NSString stringWithUTF8String:jsonString]
@@ -236,20 +218,17 @@ void setState(const char *jsonString) {
 				NSString *imgURL = seg[@"image"];
 				NSString *text = seg[@"text"];
 				BOOL grayscale = [seg[@"grayscale"] boolValue];
-				if (imgURL != nil && imgURL.length > 0) {
-					NSImage *img = [NSImage imageFromName:imgURL withHeight:fontSize];
-					if (img != nil) {
-						if (grayscale) {
-							img = makeGrayscale(img);
-						}
-						NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
-						attachment.image = img;
-						CGFloat yOffset = (fontSize - img.size.height) / 2.0 - 1.0;
-						attachment.bounds = CGRectMake(0, yOffset, img.size.width, img.size.height);
-						NSAttributedString *imgStr = [NSAttributedString attributedStringWithAttachment:attachment];
-						[rich appendAttributedString:imgStr];
-					}
+			if (imgURL != nil && imgURL.length > 0) {
+				NSImage *img = [NSImage imageFromName:imgURL withHeight:fontSize grayscale:grayscale];
+				if (img != nil) {
+					NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
+					attachment.image = img;
+					CGFloat yOffset = (fontSize - img.size.height) / 2.0 - 1.0;
+					attachment.bounds = CGRectMake(0, yOffset, img.size.width, img.size.height);
+					NSAttributedString *imgStr = [NSAttributedString attributedStringWithAttachment:attachment];
+					[rich appendAttributedString:imgStr];
 				}
+			}
 				if (text != nil && text.length > 0) {
 					NSAttributedString *textStr = [[NSAttributedString alloc]
 					                               initWithString:text

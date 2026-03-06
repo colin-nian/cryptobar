@@ -41,12 +41,11 @@ type Application struct {
 
 	alertChannel          chan AlertClicked
 	currentState          *MenuState
-	nextState             *MenuState
 	hideStartupItem       bool
-	pendingStateChange    bool
-	debounceMutex         sync.Mutex
 	visibleMenuItemsMutex sync.RWMutex
 	visibleMenuItems      map[string]internalItem
+	stateChannel          chan *MenuState
+	stateLoopOnce         sync.Once
 
 	// Used to coordinate graceful shutdown
 	wg     sync.WaitGroup
@@ -81,7 +80,19 @@ func (a *Application) SetMenuState(state *MenuState) {
 	if reflect.DeepEqual(a.currentState, state) {
 		return
 	}
-	go a.sendState(state)
+	a.stateLoopOnce.Do(func() {
+		a.stateChannel = make(chan *MenuState, 1)
+		go a.stateLoop()
+	})
+	select {
+	case a.stateChannel <- state:
+	default:
+		select {
+		case <-a.stateChannel:
+		default:
+		}
+		a.stateChannel <- state
+	}
 }
 
 // MenuChanged refreshes any open menus
@@ -135,32 +146,28 @@ type MenuState struct {
 	Segments []TitleSegment // rich title with inline images
 }
 
-func (a *Application) sendState(state *MenuState) {
-	a.debounceMutex.Lock()
-	a.nextState = state
-	if a.pendingStateChange {
-		a.debounceMutex.Unlock()
-		return
+func (a *Application) stateLoop() {
+	for state := range a.stateChannel {
+		time.Sleep(100 * time.Millisecond)
+		// drain any newer state that arrived during debounce
+		select {
+		case newer := <-a.stateChannel:
+			state = newer
+		default:
+		}
+		if reflect.DeepEqual(a.currentState, state) {
+			continue
+		}
+		a.currentState = state
+		b, err := json.Marshal(state)
+		if err != nil {
+			log.Printf("Marshal: %v (%+v)", err, state)
+			continue
+		}
+		cstr := C.CString(string(b))
+		C.setState(cstr)
+		C.free(unsafe.Pointer(cstr))
 	}
-	a.pendingStateChange = true
-	a.debounceMutex.Unlock()
-	time.Sleep(100 * time.Millisecond)
-	a.debounceMutex.Lock()
-	a.pendingStateChange = false
-	if reflect.DeepEqual(a.currentState, a.nextState) {
-		a.debounceMutex.Unlock()
-		return
-	}
-	a.currentState = a.nextState
-	a.debounceMutex.Unlock()
-	b, err := json.Marshal(a.currentState)
-	if err != nil {
-		log.Printf("Marshal: %v (%+v)", err, a.currentState)
-		return
-	}
-	cstr := C.CString(string(b))
-	C.setState(cstr)
-	C.free(unsafe.Pointer(cstr))
 }
 
 func (a *Application) clicked(unique string) {
@@ -225,7 +232,11 @@ func toggleStartup() {
 	} else {
 		a.addStartupItem()
 	}
-	go a.sendState(a.currentState)
+	if a.currentState != nil {
+		state := a.currentState
+		a.currentState = nil
+		a.SetMenuState(state)
+	}
 }
 
 //export shutdownWait

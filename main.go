@@ -67,6 +67,8 @@ func main() {
 	mb.Run()
 }
 
+const maxLogSize = 10 * 1024 * 1024 // 10 MB
+
 func setupLogging() {
 	logDir := config.LogDir()
 	if err := os.MkdirAll(logDir, 0755); err != nil {
@@ -74,7 +76,12 @@ func setupLogging() {
 		return
 	}
 
-	logFile, err := os.OpenFile(config.LogFilePath(), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	logPath := config.LogFilePath()
+	if info, err := os.Stat(logPath); err == nil && info.Size() > maxLogSize {
+		_ = os.Rename(logPath, logPath+".old")
+	}
+
+	logFile, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		log.Printf("[Main] failed to open log file: %v", err)
 		return

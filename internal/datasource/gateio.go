@@ -40,6 +40,7 @@ type gateIOSource struct {
 	mu          sync.Mutex
 	pairs       map[string]bool // "BTC_USDT" format
 	stopCh      chan struct{}
+	pingDone    chan struct{}
 	reconnDelay time.Duration
 	running     bool
 
@@ -154,7 +155,12 @@ func (g *gateIOSource) connect() error {
 	}
 
 	g.mu.Lock()
+	if g.pingDone != nil {
+		close(g.pingDone)
+	}
+	g.pingDone = make(chan struct{})
 	g.conn = conn
+	pingDone := g.pingDone
 	g.mu.Unlock()
 
 	sub := gateWSMsg{
@@ -167,7 +173,7 @@ func (g *gateIOSource) connect() error {
 		return fmt.Errorf("subscribe: %w", err)
 	}
 
-	go g.pingLoop()
+	go g.pingLoop(conn, pingDone)
 	log.Printf("[Gate.io] connected and subscribed to %d pairs", len(pairs))
 	return nil
 }
@@ -192,26 +198,23 @@ type gateTickerUpdate struct {
 	} `json:"result"`
 }
 
-func (g *gateIOSource) pingLoop() {
+func (g *gateIOSource) pingLoop(conn *websocket.Conn, done chan struct{}) {
 	ticker := time.NewTicker(15 * time.Second)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-g.stopCh:
 			return
+		case <-done:
+			return
 		case <-ticker.C:
-			g.mu.Lock()
-			conn := g.conn
-			g.mu.Unlock()
-			if conn != nil {
-				ping := gateWSMsg{
-					Time:    time.Now().Unix(),
-					Channel: "spot.ping",
-				}
-				if err := conn.WriteJSON(ping); err != nil {
-					log.Printf("[Gate.io] ping error: %v", err)
-					return
-				}
+			ping := gateWSMsg{
+				Time:    time.Now().Unix(),
+				Channel: "spot.ping",
+			}
+			if err := conn.WriteJSON(ping); err != nil {
+				log.Printf("[Gate.io] ping error: %v", err)
+				return
 			}
 		}
 	}

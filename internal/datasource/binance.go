@@ -46,6 +46,7 @@ type binanceSource struct {
 	pairs       map[string]bool
 	wsURLIdx    int
 	stopCh      chan struct{}
+	pingDone    chan struct{}
 	reconnDelay time.Duration
 	running     bool
 
@@ -165,29 +166,31 @@ func (b *binanceSource) connect() error {
 	}
 	conn.SetPongHandler(func(string) error { return nil })
 	b.mu.Lock()
+	if b.pingDone != nil {
+		close(b.pingDone)
+	}
+	b.pingDone = make(chan struct{})
 	b.conn = conn
+	pingDone := b.pingDone
 	b.mu.Unlock()
-	go b.pingLoop()
+	go b.pingLoop(conn, pingDone)
 	log.Printf("[Binance] connected successfully")
 	return nil
 }
 
-func (b *binanceSource) pingLoop() {
+func (b *binanceSource) pingLoop(conn *websocket.Conn, done chan struct{}) {
 	ticker := time.NewTicker(15 * time.Second)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-b.stopCh:
 			return
+		case <-done:
+			return
 		case <-ticker.C:
-			b.mu.Lock()
-			conn := b.conn
-			b.mu.Unlock()
-			if conn != nil {
-				if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-					log.Printf("[Binance] ping error: %v", err)
-					return
-				}
+			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				log.Printf("[Binance] ping error: %v", err)
+				return
 			}
 		}
 	}
